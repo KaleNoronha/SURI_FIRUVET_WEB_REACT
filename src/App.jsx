@@ -1,61 +1,98 @@
 import React, { useState } from 'react';
-import FormularioCita from './components/FormularioCita';
-import { crearCita } from './services/citaService';
+import FormularioLogin from './components/FormularioLogin';
+import FormularioRegistro from './components/FormularioRegistro';
+import Dashboard from './components/Dashboard';
+import { obtenerClientePorUid, registrarCliente } from './services/clienteService';
 
 function App() {
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState({ type: null, message: '' });
+  const [vista, setVista]       = useState('login');   // 'login' | 'registro' | 'dashboard'
+  const [cliente, setCliente]   = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
 
-  const handleCrearCitaSubmit = async (citaRequestData) => {
+  const handleLogin = async (uid) => {
     setLoading(true);
-    setStatus({ type: null, message: '' });
-
+    setError('');
     try {
-      const resultado = await crearCita(citaRequestData);
-      
-      setStatus({
-        type: 'success',
-        message: `¡Cita registrada con éxito! ID de Cita: ${resultado.idCita || 'Confirmada'}`
-      });
-    } catch (error) {
-      // Atrapa el 'errorData.error' lanzado por Java (ej: "No se encontró cliente con ese uid.")
-      setStatus({
-        type: 'error',
-        message: error.message
-      });
+      const data = await obtenerClientePorUid(uid);
+      setCliente(data);
+      setVista('dashboard');
+    } catch (e) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRegistro = async (formData) => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await registrarCliente(formData);
+      setCliente(data);
+      setVista('dashboard');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCerrarSesion = () => {
+    setCliente(null);
+    setError('');
+    setVista('login');
+  };
+
+  if (vista === 'dashboard' && cliente) {
+    return <Dashboard cliente={cliente} onCerrarSesion={handleCerrarSesion} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        
-        {/* Alertas de Éxito o Error */}
-        {status.type === 'success' && (
-          <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded shadow-sm">
-            <p className="font-medium">{status.message}</p>
-          </div>
-        )}
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
 
-        {status.type === 'error' && (
-          <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
-            <p className="font-medium">⚠️ Error: {status.message}</p>
-          </div>
-        )}
+      {error && (
+        <div className="w-full max-w-md mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
+          <p className="font-medium">⚠️ {error}</p>
+        </div>
+      )}
 
-        {/* Indicador visual de carga */}
-        {loading && (
-          <div className="text-center text-blue-600 font-medium mb-4 animate-pulse">
-            Comunicándose con el servidor de Suri-Firuvet...
-          </div>
-        )}
+      {loading && (
+        <div className="text-blue-600 font-medium mb-4 animate-pulse">
+          Comunicándose con el servidor...
+        </div>
+      )}
 
-        {/* El componente de tu formulario */}
-        <FormularioCita onSubmitCita={handleCrearCitaSubmit} />
-        
-      </div>
+      {vista === 'login' && (
+        <div className="w-full max-w-md">
+          <FormularioLogin onSubmitLogin={handleLogin} />
+          <p className="text-center text-sm text-gray-500 mt-4">
+            ¿No tienes cuenta?{' '}
+            <button
+              onClick={() => { setVista('registro'); setError(''); }}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Regístrate
+            </button>
+          </p>
+        </div>
+      )}
+
+      {vista === 'registro' && (
+        <div className="w-full max-w-md">
+          <FormularioRegistro onSubmitRegistro={handleRegistro} />
+          <p className="text-center text-sm text-gray-500 mt-4">
+            ¿Ya tienes cuenta?{' '}
+            <button
+              onClick={() => { setVista('login'); setError(''); }}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Inicia sesión
+            </button>
+          </p>
+        </div>
+      )}
+
     </div>
   );
 }
