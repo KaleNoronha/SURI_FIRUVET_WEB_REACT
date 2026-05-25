@@ -4,7 +4,12 @@ const API_URL = "http://localhost:8080/api";
 
 export const registrarCliente = async (clienteData) => {
   try {
-    const response = await axios.post(`${API_URL}/clientes`, clienteData);
+    const payload = { ...clienteData };
+    if (payload.fecNac) {
+      const [y, m, d] = payload.fecNac.split('-');
+      payload.fecNac = `${d}/${m}/${y}`;
+    }
+    const response = await axios.post(`${API_URL}/clientes`, payload);
     return response.data;
   } catch (error) {
     const mensajeError = error.response?.data?.error || "Error al registrar el cliente";
