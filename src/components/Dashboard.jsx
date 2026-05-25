@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { obtenerCitasPorUid, obtenerMascotasPorUid, obtenerClinicas } from '../services/dashboardService';
+import ModalRegistroMascota from './ModalRegistroMascota';
+import ModalDetalleCita from './ModalDetalleCita';
+import ModalRegistroCita from './ModalRegistroCita';
 
 const NAV_ITEMS = [
   { key: 'citas',    label: 'Citas',    icon: '📅' },
@@ -12,7 +15,10 @@ export default function Dashboard({ cliente, onCerrarSesion }) {
   const [citas, setCitas]       = useState([]);
   const [mascotas, setMascotas] = useState([]);
   const [clinicas, setClinicas] = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading]         = useState(true);
+  const [modalMascota, setModalMascota] = useState(false);
+  const [modalCita, setModalCita]       = useState(false);
+  const [citaDetalle, setCitaDetalle]   = useState(null);
 
   useEffect(() => {
     const cargar = async () => {
@@ -118,7 +124,15 @@ export default function Dashboard({ cliente, onCerrarSesion }) {
             {/* Vista: Citas */}
             {vista === 'citas' && (
               <div>
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">Mis Citas</h1>
+                <div className="flex justify-between items-center mb-6">
+                  <h1 className="text-2xl font-bold text-gray-800">Mis Citas</h1>
+                  <button
+                    onClick={() => setModalCita(true)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                  >
+                    + Registrar Cita
+                  </button>
+                </div>
                 {citas.length === 0 ? (
                   <p className="text-gray-500">No tienes citas registradas.</p>
                 ) : (
@@ -131,9 +145,17 @@ export default function Dashboard({ cliente, onCerrarSesion }) {
                             <p className="text-sm text-gray-500">🐾 {c.nombreMascota} · 🏥 {c.nombreClinica}</p>
                             {c.comentario && <p className="text-sm text-gray-400 mt-1">{c.comentario}</p>}
                           </div>
-                          <span className="text-xs text-gray-400 whitespace-nowrap ml-4">
-                            {new Date(c.fecha).toLocaleString('es-PE')}
-                          </span>
+                          <div className="flex flex-col items-end gap-2 ml-4">
+                            <span className="text-xs text-gray-400 whitespace-nowrap">
+                              {new Date(c.fecha).toLocaleString('es-PE')}
+                            </span>
+                            <button
+                              onClick={() => setCitaDetalle(c)}
+                              className="text-xs px-3 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+                            >
+                              Detalles
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -145,7 +167,15 @@ export default function Dashboard({ cliente, onCerrarSesion }) {
             {/* Vista: Mascotas */}
             {vista === 'mascotas' && (
               <div>
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">Mis Mascotas</h1>
+                <div className="flex justify-between items-center mb-6">
+                  <h1 className="text-2xl font-bold text-gray-800">Mis Mascotas</h1>
+                  <button
+                    onClick={() => setModalMascota(true)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                  >
+                    + Registrar Mascota
+                  </button>
+                </div>
                 {mascotas.length === 0 ? (
                   <p className="text-gray-500">No tienes mascotas registradas.</p>
                 ) : (
@@ -185,6 +215,31 @@ export default function Dashboard({ cliente, onCerrarSesion }) {
           </>
         )}
       </main>
+
+      {modalMascota && (
+        <ModalRegistroMascota
+          uid={cliente.uid}
+          onClose={() => setModalMascota(false)}
+          onRegistrado={(nueva) => setMascotas((prev) => [...prev, nueva])}
+        />
+      )}
+
+      {citaDetalle && (
+        <ModalDetalleCita
+          cita={citaDetalle}
+          onClose={() => setCitaDetalle(null)}
+        />
+      )}
+
+      {modalCita && (
+        <ModalRegistroCita
+          uid={cliente.uid}
+          mascotas={mascotas}
+          clinicas={clinicas}
+          onClose={() => setModalCita(false)}
+          onRegistrado={(nueva) => setCitas((prev) => [...prev, nueva])}
+        />
+      )}
     </div>
   );
 }
