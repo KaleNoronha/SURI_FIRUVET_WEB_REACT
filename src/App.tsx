@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import FormularioLogin from './components/FormularioLogin';
-import FormularioRegistro from './components/FormularioRegistro';
-import Dashboard from './components/Dashboard';
-import { obtenerClientePorUid, registrarCliente } from './services/clienteService';
+import FormularioLogin from './components/FormularioLogin.jsx';
+import FormularioRegistro from './components/FormularioRegistro.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import { obtenerClientePorUid, registrarCliente } from './services/clienteService.js';
 
 function App() {
   const [vista, setVista]       = useState('login');   // 'login' | 'registro' | 'dashboard'
