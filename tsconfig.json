@@ -7,14 +7,30 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "types": [],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
     // and npm install -D @types/node
-
+    "baseUrl": ".",
+    "paths": {
+      "@components/*":["src/components/*"],
+      "@services/*":["src/services/*"],
+      "@hooks/*":["src/hooks/*"],
+      "@utils/*":["src/utils/*"],
+      "@api/*":["src/api/*"],
+      "@constants/*":["src/constants/*"],
+      "@routers":["src/routers/index.ts"],
+      "@routers/*":["src/routers/*"],
+      "@auth/*":["src/auth/*"],
+      "@pages/*":["src/pages/*"],
+      "@appTypes":["src/@types/index.ts"],
+      "@appTypes/*":["src/@types/*"],
+      "@assets/*":["src/assets/*"],
+    },
     // Other Outputs
     "sourceMap": true,
     "declaration": true,
