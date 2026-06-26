@@ -8,6 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@firebase/util", "protobufjs"]
+  },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "class-variance-authority": "^0.7.1",

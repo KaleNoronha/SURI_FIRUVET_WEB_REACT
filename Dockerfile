@@ -8,10 +8,7 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
-
-# Permitir build scripts (firebase, protobufjs los necesitan)
-RUN echo "ignore-scripts=false" > .npmrc && \
-    pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm build
