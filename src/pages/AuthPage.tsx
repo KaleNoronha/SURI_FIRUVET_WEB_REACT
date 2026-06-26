@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginForm, RegisterForm } from "@components/auth";
+import { Modal } from "@components/ui";
 import type { RegisterFormData } from "@appTypes";
 import { LoadingOverlay } from "@components/common";
+import { useForgotPassword } from "@hooks/index";
 import { useAuth } from "@auth/index";
 import MascotasLoginImg from "@assets/MASCOTAS_login.png";
 
@@ -23,12 +25,14 @@ type AuthView = "login" | "register";
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 function AuthPage() {
-  const [view, setView]     = useState<AuthView>("login");
+  const [view, setView]       = useState<AuthView>("login");
   const [loading, setLoading] = useState(false);
-  const [error, setError]   = useState("");
-  const [ready, setReady]   = useState(false); // controla animaciones de entrada
+  const [error, setError]     = useState("");
+  const [ready, setReady]     = useState(false);
+  const forgot = useForgotPassword();
+
   const navigate = useNavigate();
-  const { login, loginWithGoogle, register, resetPassword, user, cliente, isAdmin } = useAuth();
+  const { login, loginWithGoogle, register, user, cliente, isAdmin } = useAuth();
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setReady(true));
@@ -39,7 +43,7 @@ function AuthPage() {
     if (user && cliente) navigate(isAdmin ? "/admin" : "/inicio", { replace: true });
   }, [user, cliente, isAdmin]);
 
-  // Firebase autenticó pero aún carga el cliente → pantalla completa de transición
+  // Early return DESPUÉS de todos los hooks
   if (user && !cliente) {
     return <LoadingOverlay fullScreen message="Iniciando sesión..." />;
   }
@@ -58,12 +62,9 @@ function AuthPage() {
     finally { setLoading(false); }
   };
 
-  const handleForgotPassword = async () => {
-    const email = prompt("Ingresa tu correo electrónico:");
-    if (!email) return;
-    try { await resetPassword(email); alert("Se envió un correo para restablecer tu contraseña."); }
-    catch (e) { setError(e instanceof Error ? e.message : "Error al enviar correo"); }
-  };
+  const handleForgotPassword = () => forgot.open();
+
+  const handleSendReset = () => forgot.send();
 
   const handleGoogleLogin = async () => {
     setLoading(true); setError("");
@@ -193,6 +194,67 @@ function AuthPage() {
           )}
         </div>
       </div>
+      {/* ─── Modal recuperar contraseña ─────────────────────── */}
+      <Modal
+        isOpen={forgot.isOpen}
+        onClose={forgot.close}
+        title="Recuperar contraseña"
+        size="sm"
+      >
+        {forgot.sent ? (
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-teal-50">
+              <svg className="size-7 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-gray-700 font-medium">¡Correo enviado!</p>
+            <p className="text-sm text-gray-500">
+              Revisa tu bandeja de entrada en <strong>{forgot.email}</strong> y sigue las instrucciones para restablecer tu contraseña.
+            </p>
+            <button
+              onClick={forgot.close}
+              className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Correo electrónico</label>
+              <input
+                type="email"
+                value={forgot.email}
+                onChange={e => forgot.setEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSendReset()}
+                placeholder="tu@correo.com"
+                autoFocus
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+              {forgot.error && <p className="text-red-500 text-xs mt-1">{forgot.error}</p>}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSendReset}
+                disabled={forgot.loading || !forgot.email.trim()}
+                className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50"
+              >
+                {forgot.loading ? "Enviando..." : "Enviar enlace"}
+              </button>
+              <button
+                onClick={forgot.close}
+                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

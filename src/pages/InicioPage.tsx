@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, LogOut, ChevronDown } from "lucide-react";
+import { User, LogOut, ChevronDown, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@components/ui";
 import { StatCard, QuickAccessCard, HistorialItem } from "@components/inicio";
 import { LoadingOverlay, PageSkeleton } from "@components/common";
@@ -14,7 +14,7 @@ import DashboardIcon from "@assets/DASHBOARD.svg";
 
 function InicioPage() {
   const navigate = useNavigate();
-  const { cliente, idCliente, logout } = useAuth();
+  const { cliente, idCliente, logout, isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -106,7 +106,7 @@ function InicioPage() {
             Nuevo día cuidando las vidas de los engreídos de casa.
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-end gap-4">
           {/* Profile dropdown */}
           <div className="relative" ref={menuRef}>
             <button
@@ -121,7 +121,19 @@ function InicioPage() {
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 top-14 w-44 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-50 animate-[fadeSlideUp_0.15s_ease]">
+              <div className="absolute right-0 top-14 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-50 animate-[fadeSlideUp_0.15s_ease]">
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={() => { setMenuOpen(false); navigate("/admin"); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-teal-700 hover:bg-teal-50 transition-colors font-medium"
+                    >
+                      <ShieldCheck className="size-4 text-teal-500" />
+                      Panel Admin
+                    </button>
+                    <div className="h-px bg-slate-100 mx-2" />
+                  </>
+                )}
                 <button
                   onClick={() => { setMenuOpen(false); navigate("/perfil"); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"

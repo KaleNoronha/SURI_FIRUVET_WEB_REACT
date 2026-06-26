@@ -120,8 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterFormData) => {
     const credential = await createUserWithEmailAndPassword(auth, data.email, data.password);
     const uid = credential.user.uid;
-    // ponytail: API expects dd/MM/yyyy, HTML date input gives yyyy-MM-dd
-    const fecNac = data.fecNac ? data.fecNac.split("-").reverse().join("/") : "";
+    // HTML date input ya da yyyy-MM-dd, que es lo que espera @JsonFormat(pattern = "yyyy-MM-dd")
+    const fecNac = data.fecNac ?? "";
 
     // Create client in REST API
     await clienteService.create({

@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
-import { Shield, User, Pencil, Trash2 } from "lucide-react";
-import { ConfirmDialog } from "@components/common";
-import { toast } from "@components/ui";
+import { Shield, User, Pencil, Trash2, Eye, PawPrint, Calendar } from "lucide-react";
+import { ConfirmDialog, LoadingOverlay } from "@components/common";
+import { toast, Modal } from "@components/ui";
 import { clienteService } from "@services/cliente.service";
-import type { Cliente } from "@appTypes";
+import { mascotaService } from "@services/mascota.service";
+import { citaService } from "@services/cita.service";
+import type { Cliente, Mascota, Cita } from "@appTypes";
 
-type Modal = null | { mode: "edit"; cliente: Cliente };
+type EditModal = null | { mode: "edit"; cliente: Cliente };
 type ConfirmState = null | { id: number; nombre: string };
+type ViewModal = null | { cliente: Cliente; mascotas: Mascota[]; citas: Cita[]; loading: boolean };
 
 const emptyForm = { nombCli: "", apeCli: "", fecNac: "" };
 
 function AdminClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<Modal>(null);
+  const [modal, setModal]             = useState<EditModal>(null);
+  const [viewModal, setViewModal]     = useState<ViewModal>(null);
   const [confirm, setConfirm] = useState<ConfirmState>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -22,6 +26,15 @@ function AdminClientesPage() {
 
   const load = () => clienteService.getAll().then(setClientes).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
+
+  const openView = async (c: Cliente) => {
+    setViewModal({ cliente: c, mascotas: [], citas: [], loading: true });
+    const [mascotas, citas] = await Promise.all([
+      mascotaService.getByCliente(c.id).catch(() => [] as Mascota[]),
+      citaService.getByCliente(c.id).catch(() => [] as Cita[]),
+    ]);
+    setViewModal({ cliente: c, mascotas, citas, loading: false });
+  };
   const openEdit = (c: Cliente) => {
     // API returns yyyy-MM-dd, UpdateClienteRequest expects dd/MM/yyyy
     const fecNac = c.fecNac ? c.fecNac.split("-").reverse().join("/") : "";
@@ -69,7 +82,7 @@ function AdminClientesPage() {
   if (loading) return <div className="flex items-center justify-center h-64 text-slate-500">Cargando...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-h-0 gap-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Clientes</h1>
@@ -77,10 +90,10 @@ function AdminClientesPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
+        <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <thead className="sticky top-0 z-10 bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3 text-left">ID</th>
                 <th className="px-4 py-3 text-left">Nombre</th>
@@ -108,6 +121,9 @@ function AdminClientesPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
+                      <button onClick={() => openView(c)} className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors" title="Ver mascotas y citas">
+                        <Eye className="size-3.5" />
+                      </button>
                       <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                         <Pencil className="size-3.5" />
                       </button>
@@ -123,6 +139,72 @@ function AdminClientesPage() {
           </table>
         </div>
       </div>
+
+      {viewModal && (
+        <Modal
+          isOpen
+          onClose={() => setViewModal(null)}
+          title={`${viewModal.cliente.nombCli} ${viewModal.cliente.apeCli}`}
+          size="lg"
+        >
+          {viewModal.loading ? (
+            <div className="flex items-center justify-center h-32 text-slate-400">Cargando...</div>
+          ) : (
+            <div className="space-y-5">
+              {/* Mascotas */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <PawPrint className="size-4 text-teal-600" />
+                  <h3 className="font-semibold text-slate-700">Mascotas ({viewModal.mascotas.length})</h3>
+                </div>
+                {viewModal.mascotas.length === 0 ? (
+                  <p className="text-sm text-slate-400">Sin mascotas registradas.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {viewModal.mascotas.map(m => (
+                      <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <PawPrint className="size-4 text-teal-500 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-800 truncate">{m.nombMas}</p>
+                          <p className="text-xs text-slate-400">{m.nombreTipo}</p>
+                        </div>
+                        {m.alergias && (
+                          <span className="ml-auto px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[10px] shrink-0">⚠</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-slate-100" />
+
+              {/* Citas */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar className="size-4 text-blue-500" />
+                  <h3 className="font-semibold text-slate-700">Citas ({viewModal.citas.length})</h3>
+                </div>
+                {viewModal.citas.length === 0 ? (
+                  <p className="text-sm text-slate-400">Sin citas registradas.</p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {viewModal.citas.map(cita => (
+                      <div key={cita.idCita} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium shrink-0">{cita.nombreTipoCita}</span>
+                        <span className="text-xs text-slate-600 truncate">{cita.nombreMascota}</span>
+                        <span className="ml-auto text-xs text-slate-400 shrink-0">
+                          {new Date(cita.fecha).toLocaleDateString("es-PE", { day: "2-digit", month: "short" })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
 
       {confirm && (
         <ConfirmDialog
@@ -155,7 +237,7 @@ function AdminClientesPage() {
                   className="w-full mt-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
               </div>
               <div className="col-span-2">
-                <label className="text-xs font-medium text-slate-600">Fecha nacimiento <span className="text-slate-400">(dd/MM/yyyy)</span></label>
+                <label className="text-xs font-medium text-slate-600">Fecha nacimiento <span className="text-slate-400 font-normal">(dd/MM/yyyy)</span></label>
                 <input value={form.fecNac} onChange={e => setForm(f => ({ ...f, fecNac: e.target.value }))}
                   placeholder="15/03/1990"
                   className="w-full mt-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />

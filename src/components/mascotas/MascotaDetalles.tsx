@@ -1,5 +1,6 @@
 import { PawPrint, Heart, AlertTriangle, User } from "lucide-react";
 import { Button } from "@components/ui";
+import { useAuth } from "@auth/index";
 import type { Mascota } from "@appTypes";
 
 interface MascotaDetallesProps {
@@ -8,6 +9,8 @@ interface MascotaDetallesProps {
 }
 
 function MascotaDetalles({ mascota, onClose }: MascotaDetallesProps) {
+  const { cliente } = useAuth();
+  const nombreCliente = cliente ? `${cliente.nombCli} ${cliente.apeCli}` : `#${mascota.idCliente}`;
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -35,8 +38,8 @@ function MascotaDetalles({ mascota, onClose }: MascotaDetallesProps) {
         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
           <User className="size-4 text-[#079f92] shrink-0" />
           <div>
-            <p className="text-xs text-gray-400">ID Cliente</p>
-            <p className="font-semibold text-gray-800">#{mascota.idCliente}</p>
+            <p className="text-xs text-gray-400">Dueño</p>
+            <p className="font-semibold text-gray-800">{nombreCliente}</p>
           </div>
         </div>
       </div>

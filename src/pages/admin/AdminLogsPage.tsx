@@ -41,7 +41,7 @@ function AdminLogsPage() {
   if (loading) return <div className="flex items-center justify-center h-64 text-slate-500">Cargando...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-h-0 gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Auditoría</h1>
@@ -56,10 +56,10 @@ function AdminLogsPage() {
         />
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
+        <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <thead className="sticky top-0 z-10 bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3 text-left">#</th>
                 <th className="px-4 py-3 text-left">Tipo</th>
