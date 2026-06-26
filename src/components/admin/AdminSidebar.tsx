@@ -4,11 +4,11 @@ import { useAuth } from "@auth/index";
 import LogoImg from "@assets/Logo.jpeg";
 
 const navItems = [
-  { to: "/admin",          label: "Dashboard",  icon: LayoutDashboard, end: true },
-  { to: "/admin/clientes", label: "Clientes",   icon: Users },
-  { to: "/admin/mascotas", label: "Mascotas",   icon: PawPrint },
-  { to: "/admin/citas",    label: "Citas",      icon: Calendar },
-  { to: "/admin/logs",     label: "Auditoría",  icon: ScrollText },
+  { to: "/admin",          label: "Dashboard",  icon: LayoutDashboard, end: true  as const },
+  { to: "/admin/clientes", label: "Clientes",   icon: Users,           end: false as const },
+  { to: "/admin/mascotas", label: "Mascotas",   icon: PawPrint,        end: false as const },
+  { to: "/admin/citas",    label: "Citas",      icon: Calendar,        end: false as const },
+  { to: "/admin/logs",     label: "Auditoría",  icon: ScrollText,      end: false as const },
 ];
 
 export default function AdminSidebar() {
