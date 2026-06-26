@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Calendar, Eye, Clock, Trash2 } from "lucide-react";
 import { Button, Modal } from "@components/ui";
-import { LoadingOverlay, EmptyState, ErrorMessage } from "@components/common";
+import { LoadingOverlay, EmptyState, ErrorMessage, PageSkeleton } from "@components/common";
 import { useAuth } from "@auth/index";
 import { citaService, mascotaService, catalogoService } from "@services/index";
 import { toast } from "@components/ui";
@@ -91,7 +91,7 @@ function CitasPage() {
     }
   };
 
-  if (loadingPage) return <LoadingOverlay fullScreen message="Cargando citas..." />;
+  if (loadingPage) return <PageSkeleton cards={6} />;
 
   return (
     <div className="w-full px-2 sm:px-4 lg:px-6">

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@components/ui";
 import { StatCard, QuickAccessCard, HistorialItem } from "@components/inicio";
-import { LoadingOverlay } from "@components/common";
+import { LoadingOverlay, PageSkeleton } from "@components/common";
 import { useAuth } from "@auth/index";
 import { mascotaService, citaService, catalogoService } from "@services/index";
 import type { Mascota, Cita, Clinica } from "@appTypes";
@@ -52,7 +52,7 @@ function InicioPage() {
       .catch(() => {});
   }, [idCliente]);
 
-  if (loading) return <LoadingOverlay fullScreen message="Cargando..." />;
+  if (loading) return <PageSkeleton cards={3} header={false} />;
 
   const stats = [
     {

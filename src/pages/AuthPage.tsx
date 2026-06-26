@@ -39,6 +39,11 @@ function AuthPage() {
     if (user && cliente) navigate(isAdmin ? "/admin" : "/inicio", { replace: true });
   }, [user, cliente, isAdmin]);
 
+  // Firebase autenticó pero aún carga el cliente → pantalla completa de transición
+  if (user && !cliente) {
+    return <LoadingOverlay fullScreen message="Iniciando sesión..." />;
+  }
+
   const handleLogin = async (email: string, password: string) => {
     setLoading(true); setError("");
     try { await login(email, password); }

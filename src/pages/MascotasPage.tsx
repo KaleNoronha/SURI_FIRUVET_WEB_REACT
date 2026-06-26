@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Eye, Heart } from "lucide-react";
 import { Button, Modal } from "@components/ui";
-import { LoadingOverlay, EmptyState, ErrorMessage } from "@components/common";
+import { LoadingOverlay, EmptyState, ErrorMessage, PageSkeleton } from "@components/common";
 import RegistrarMascotaForm from "@components/mascotas/RegistrarMascotaForm";
 import MascotaDetalles from "@components/mascotas/MascotaDetalles";
 import EditarMascotaForm from "@components/mascotas/EditarMascotaForm";
@@ -127,9 +127,7 @@ function MascotasPage() {
     }
   };
 
-  if (loadingPage) {
-    return <LoadingOverlay message="Cargando mascotas..." fullScreen />;
-  }
+  if (loadingPage) return <PageSkeleton cards={6} />;
 
   return (
     <div className="w-full px-2 sm:px-4 lg:px-6">

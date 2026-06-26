@@ -12,3 +12,5 @@ export type { PageHeaderProps } from "./PageHeader.js";
 
 export { LoadingOverlay } from "./LoadingOverlay.js";
 export type { LoadingOverlayProps } from "./LoadingOverlay.js";
+
+export { PageSkeleton } from "./PageSkeleton";
