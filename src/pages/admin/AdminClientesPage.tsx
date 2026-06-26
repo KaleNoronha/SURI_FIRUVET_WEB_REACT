@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Shield, User, Pencil, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@components/common";
+import { toast } from "@components/ui";
 import { clienteService } from "@services/cliente.service";
 import type { Cliente } from "@appTypes";
 
-type Modal = null | { mode: "create" } | { mode: "edit"; cliente: Cliente };
+type Modal = null | { mode: "edit"; cliente: Cliente };
+type ConfirmState = null | { id: number; nombre: string };
 
 const emptyForm = { nombCli: "", apeCli: "", fecNac: "" };
 
@@ -11,6 +14,7 @@ function AdminClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<Modal>(null);
+  const [confirm, setConfirm] = useState<ConfirmState>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
@@ -21,7 +25,9 @@ function AdminClientesPage() {
 
   const openCreate = () => { setForm(emptyForm); setModal({ mode: "create" }); };
   const openEdit = (c: Cliente) => {
-    setForm({ nombCli: c.nombCli, apeCli: c.apeCli, fecNac: c.fecNac || "" });
+    // API returns yyyy-MM-dd, UpdateClienteRequest expects dd/MM/yyyy
+    const fecNac = c.fecNac ? c.fecNac.split("-").reverse().join("/") : "";
+    setForm({ nombCli: c.nombCli, apeCli: c.apeCli, fecNac });
     setModal({ mode: "edit", cliente: c });
   };
 
@@ -31,18 +37,23 @@ function AdminClientesPage() {
       if (modal?.mode === "edit") {
         const updated = await clienteService.update(modal.cliente.id, form);
         setClientes(prev => prev.map(c => c.id === updated.id ? updated : c));
+        toast.success("Cliente actualizado correctamente.");
       }
       setModal(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar cliente.");
     } finally { setSaving(false); }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Eliminar este cliente? Se perderán sus mascotas y citas.")) return;
     setDeleting(id);
     try {
       await clienteService.delete(id);
       setClientes(prev => prev.filter(c => c.id !== id));
-    } finally { setDeleting(null); }
+      toast.success("Cliente eliminado.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al eliminar cliente.");
+    } finally { setDeleting(null); setConfirm(null); }
   };
 
   const handleToggleRol = async (c: Cliente) => {
@@ -51,6 +62,9 @@ function AdminClientesPage() {
     try {
       const updated = await clienteService.cambiarRol(c.id, nuevoRol);
       setClientes(prev => prev.map(x => x.id === updated.id ? updated : x));
+      toast.success(`Rol actualizado a ${nuevoRol === 2 ? "administrador" : "usuario"}.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al cambiar rol.");
     } finally { setChangingRol(null); }
   };
 
@@ -99,7 +113,7 @@ function AdminClientesPage() {
                       <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                         <Pencil className="size-3.5" />
                       </button>
-                      <button onClick={() => handleDelete(c.id)} disabled={deleting === c.id}
+                      <button onClick={() => setConfirm({ id: c.id, nombre: `${c.nombCli} ${c.apeCli}` })} disabled={deleting === c.id}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
                         <Trash2 className="size-3.5" />
                       </button>
@@ -111,6 +125,18 @@ function AdminClientesPage() {
           </table>
         </div>
       </div>
+
+      {confirm && (
+        <ConfirmDialog
+          open
+          variant="danger"
+          title="Eliminar cliente"
+          description={`¿Eliminar a ${confirm.nombre}? Se perderán sus mascotas y citas asociadas.`}
+          confirmLabel={deleting === confirm.id ? "Eliminando..." : "Eliminar"}
+          onConfirm={() => handleDelete(confirm.id)}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
 
       {/* Modal editar */}
       {modal && (
@@ -131,7 +157,7 @@ function AdminClientesPage() {
                   className="w-full mt-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
               </div>
               <div className="col-span-2">
-                <label className="text-xs font-medium text-slate-600">Fecha nacimiento (dd/MM/yyyy)</label>
+                <label className="text-xs font-medium text-slate-600">Fecha nacimiento <span className="text-slate-400">(dd/MM/yyyy)</span></label>
                 <input value={form.fecNac} onChange={e => setForm(f => ({ ...f, fecNac: e.target.value }))}
                   placeholder="15/03/1990"
                   className="w-full mt-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />

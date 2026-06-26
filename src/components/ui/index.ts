@@ -21,3 +21,6 @@ export { Separator } from "./Separator.js";
 export type { SeparatorProps } from "./Separator.js";
 
 export { default as Modal } from "./Modal.js";
+
+export { ToastContainer, toast } from "./Toast";
+export type { ToastType, ToastMessage } from "./Toast";

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { ConfirmDialog } from "@components/common";
+import { toast } from "@components/ui";
 import { citaService } from "@services/cita.service";
 import { catalogoService } from "@services/catalogo.service";
 import { mascotaService } from "@services/mascota.service";
@@ -18,6 +20,7 @@ function AdminCitasPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<Modal>(null);
+  const [confirm, setConfirm] = useState<Cita | null>(null);
   const [editForm, setEditForm] = useState({ idTipoCita: 0, fecha: "", comentario: "" });
   const [createForm, setCreateForm] = useState<CitaFormData>(emptyCreateForm);
   const [saving, setSaving] = useState(false);
@@ -51,29 +54,32 @@ function AdminCitasPage() {
     try {
       if (modal?.mode === "edit") {
         await citaService.update(modal.cita.idCita, {
-          idTipoCita: editForm.idTipoCita,
-          fecha: editForm.fecha,
+          idTipoCita: editForm.idTipoCita, fecha: editForm.fecha,
           comentario: editForm.comentario,
-          idMascota: modal.cita.idMascota,
-          idCliente: modal.cita.idCliente,
-          idClinica: modal.cita.idClinica,
+          idMascota: modal.cita.idMascota, idCliente: modal.cita.idCliente, idClinica: modal.cita.idClinica,
         });
+        toast.success("Cita actualizada correctamente.");
       } else if (modal?.mode === "create") {
         await citaService.create(createForm);
+        toast.success("Cita creada correctamente.");
       }
       const updated = await citaService.getAll();
       setCitas(updated);
       setModal(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar cita.");
     } finally { setSaving(false); }
   };
 
   const handleDelete = async (c: Cita) => {
-    if (!confirm(`¿Eliminar cita #${c.idCita}?`)) return;
     setDeleting(c.idCita);
     try {
       await citaService.delete(c.idCita, c.idCliente);
       setCitas(prev => prev.filter(x => x.idCita !== c.idCita));
-    } finally { setDeleting(null); }
+      toast.success("Cita eliminada.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al eliminar cita.");
+    } finally { setDeleting(null); setConfirm(null); }
   };
 
   // Mascotas filtradas por cliente seleccionado en create
@@ -129,7 +135,7 @@ function AdminCitasPage() {
                       <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                         <Pencil className="size-3.5" />
                       </button>
-                      <button onClick={() => handleDelete(c)} disabled={deleting === c.idCita}
+                      <button onClick={() => setConfirm(c)} disabled={deleting === c.idCita}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
                         <Trash2 className="size-3.5" />
                       </button>
@@ -141,6 +147,18 @@ function AdminCitasPage() {
           </table>
         </div>
       </div>
+
+      {confirm && (
+        <ConfirmDialog
+          open
+          variant="danger"
+          title="Eliminar cita"
+          description={`¿Eliminar la cita #${confirm.idCita} de ${confirm.nombreMascota}? Esta acción no se puede deshacer.`}
+          confirmLabel={deleting === confirm.idCita ? "Eliminando..." : "Eliminar"}
+          onConfirm={() => handleDelete(confirm)}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
 
       {modal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

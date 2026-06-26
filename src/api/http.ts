@@ -36,12 +36,13 @@ async function httpClient<T = unknown>(
 
   const response = await fetch(url.toString(), config);
 
+  // Read body once as text, then try to parse as JSON
+  const rawText = await response.text();
   let data: unknown;
-  const contentType = response.headers.get("content-type");
-  if (contentType?.includes("application/json")) {
-    data = await response.json();
-  } else {
-    data = await response.text();
+  try {
+    data = rawText ? JSON.parse(rawText) : null;
+  } catch {
+    data = rawText;
   }
 
   if (!response.ok) {

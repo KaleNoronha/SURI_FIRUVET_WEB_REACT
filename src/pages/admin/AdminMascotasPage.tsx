@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { ConfirmDialog } from "@components/common";
+import { toast } from "@components/ui";
 import { mascotaService } from "@services/mascota.service";
 import { catalogoService } from "@services/catalogo.service";
 import { clienteService } from "@services/cliente.service";
@@ -15,6 +17,7 @@ function AdminMascotasPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<Modal>(null);
+  const [confirm, setConfirm] = useState<{ mascota: Mascota } | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
@@ -46,22 +49,30 @@ function AdminMascotasPage() {
         if (nueva) {
           const all = await mascotaService.getAll();
           setMascotas(all);
+          toast.success("Mascota registrada correctamente.");
+        } else {
+          toast.error("No se pudo registrar. Verifica el tipo de mascota y cliente.");
         }
       } else {
         const updated = await mascotaService.update(modal.mascota.id, { ...form });
         setMascotas(prev => prev.map(m => m.id === updated.id ? updated : m));
+        toast.success("Mascota actualizada correctamente.");
       }
       setModal(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar mascota.");
     } finally { setSaving(false); }
   };
 
   const handleDelete = async (m: Mascota) => {
-    if (!confirm(`¿Eliminar a ${m.nombMas}?`)) return;
     setDeleting(m.id);
     try {
       await mascotaService.delete(m.id, m.idCliente);
       setMascotas(prev => prev.filter(x => x.id !== m.id));
-    } finally { setDeleting(null); }
+      toast.success("Mascota eliminada.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al eliminar mascota.");
+    } finally { setDeleting(null); setConfirm(null); }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64 text-slate-500">Cargando...</div>;
@@ -94,14 +105,18 @@ function AdminMascotasPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {mascotas.map(m => (
+              {mascotas.map(m => {
+                const dueño = clientes.find(c => c.id === m.idCliente);
+                return (
                 <tr key={m.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 text-slate-400">#{m.id}</td>
                   <td className="px-4 py-3 font-medium text-slate-800">{m.nombMas}</td>
                   <td className="px-4 py-3">
                     <span className="px-2 py-0.5 bg-teal-50 text-teal-700 rounded-full text-xs font-medium">{m.nombreTipo}</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-500">#{m.idCliente}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {dueño ? `${dueño.nombCli} ${dueño.apeCli}` : `#${m.idCliente}`}
+                  </td>
                   <td className="px-4 py-3 text-slate-500 italic">{m.apodos || "—"}</td>
                   <td className="px-4 py-3">
                     {m.alergias
@@ -113,18 +128,31 @@ function AdminMascotasPage() {
                       <button onClick={() => openEdit(m)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                         <Pencil className="size-3.5" />
                       </button>
-                      <button onClick={() => handleDelete(m)} disabled={deleting === m.id}
+                      <button onClick={() => setConfirm({ mascota: m })} disabled={deleting === m.id}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
                         <Trash2 className="size-3.5" />
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      {confirm && (
+        <ConfirmDialog
+          open
+          variant="danger"
+          title="Eliminar mascota"
+          description={`¿Eliminar a ${confirm.mascota.nombMas}? Esta acción no se puede deshacer.`}
+          confirmLabel={deleting === confirm.mascota.id ? "Eliminando..." : "Eliminar"}
+          onConfirm={() => handleDelete(confirm.mascota)}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
 
       {modal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

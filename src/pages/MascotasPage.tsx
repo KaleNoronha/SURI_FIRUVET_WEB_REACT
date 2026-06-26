@@ -6,6 +6,7 @@ import RegistrarMascotaForm from "@components/mascotas/RegistrarMascotaForm";
 import MascotaDetalles from "@components/mascotas/MascotaDetalles";
 import EditarMascotaForm from "@components/mascotas/EditarMascotaForm";
 import { mascotaService, catalogoService } from "@services/index";
+import { toast } from "@components/ui";
 import { useAuth } from "@auth/index";
 import type { Mascota, TipoMascota, MascotaFormData } from "@appTypes";
 import miIcono from "../assets/MASCOTAS.svg";
@@ -115,12 +116,12 @@ function MascotasPage() {
   const handleEliminarMascota = async (mascota: Mascota) => {
     if (!idCliente) return;
     setLoading(true);
-    setError(null);
     try {
       await mascotaService.delete(mascota.id, idCliente);
       await cargarMascotas();
+      toast.success(`${mascota.nombMas} eliminada correctamente.`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al eliminar mascota");
+      toast.error(e instanceof Error ? e.message : "Error al eliminar mascota");
     } finally {
       setLoading(false);
     }

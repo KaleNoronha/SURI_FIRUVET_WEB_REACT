@@ -4,6 +4,7 @@ import { Button, Modal } from "@components/ui";
 import { LoadingOverlay, EmptyState, ErrorMessage } from "@components/common";
 import { useAuth } from "@auth/index";
 import { citaService, mascotaService, catalogoService } from "@services/index";
+import { toast } from "@components/ui";
 import type { Cita, Mascota, TipoCita, Clinica, CitaFormData } from "@appTypes";
 import citasIcon from "../assets/CITAS.svg";
 import registrarCitaIcon from "../assets/REGISTRAR CITAS.png";
@@ -77,14 +78,14 @@ function CitasPage() {
   };
 
   const handleEliminarCita = async (cita: Cita) => {
-    if (!idCliente || !confirm("¿Eliminar esta cita?")) return;
+    if (!idCliente) return;
     setLoading(true);
-    setError(null);
     try {
       await citaService.delete(cita.idCita, idCliente);
       await cargarCitas();
+      toast.success("Cita eliminada correctamente.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al eliminar cita");
+      toast.error(e instanceof Error ? e.message : "Error al eliminar cita");
     } finally {
       setLoading(false);
     }
