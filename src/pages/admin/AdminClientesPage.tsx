@@ -22,8 +22,6 @@ function AdminClientesPage() {
 
   const load = () => clienteService.getAll().then(setClientes).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
-
-  const openCreate = () => { setForm(emptyForm); setModal({ mode: "create" }); };
   const openEdit = (c: Cliente) => {
     // API returns yyyy-MM-dd, UpdateClienteRequest expects dd/MM/yyyy
     const fecNac = c.fecNac ? c.fecNac.split("-").reverse().join("/") : "";

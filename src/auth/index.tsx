@@ -108,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           apeCli: apellidoParts.join(" ") || "",
           fecNac: "",
           uid: firebaseUser.uid,
+          idRol: 1,
         });
         setCliente(newCliente);
       }

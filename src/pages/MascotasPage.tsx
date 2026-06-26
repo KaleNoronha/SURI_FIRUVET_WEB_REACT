@@ -100,8 +100,8 @@ function MascotasPage() {
         nombMas: formData.nombMas,
         idTipoMascota: formData.idTipoMascota,
         idCliente,
-        apodos: formData.apodos || undefined,
-        alergias: formData.alergias || undefined,
+        apodos: formData.apodos || "",
+        alergias: formData.alergias || "",
       });
       await cargarMascotas();
       setModalEditarOpen(false);
