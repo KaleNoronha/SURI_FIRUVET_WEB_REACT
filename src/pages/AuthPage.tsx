@@ -131,10 +131,10 @@ function AuthPage() {
 
         {/* Mascotas — sobre el blob teal, alineadas al fondo */}
         <div
-          className="absolute bottom-0 left-8 hidden sm:block"
+          className="absolute bottom-0 left-0 hidden sm:block"
           style={{
             ...fadeUp(0.25),
-            width: "clamp(180px, 22vw, 300px)",
+            width: "clamp(220px, 28vw, 380px)",
           }}
         >
           <img

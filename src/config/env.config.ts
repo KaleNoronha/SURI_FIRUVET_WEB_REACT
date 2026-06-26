@@ -4,9 +4,11 @@
  */
 export const env = {
   isDev: import.meta.env.DEV as boolean,
-  // En modo 'local' (dev por defecto) → proxy activo → BASE_URL vacía
-  // En modo 'direct' (dev:dev) o producción → URL completa
-  isProxy: import.meta.env.DEV && import.meta.env.MODE !== 'direct',
+  // Proxy activo en todos los entornos EXCEPTO dev:dev
+  // - dev (default): proxy via Vite
+  // - producción: proxy via nginx
+  // - dev:dev: sin proxy, hits directo a la API
+  isProxy: import.meta.env.MODE !== 'direct',
 
   api: {
     baseUrl: import.meta.env.VITE_URL_BASE ?? "https://suri-firuvet-ios-damii-api.onrender.com",
