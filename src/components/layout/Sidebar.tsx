@@ -8,8 +8,8 @@ import ClinicasIcon from "@assets/CLINICAS.png";
 
 const navItems = [
   { to: "/inicio", label: "INICIO", icon: InicioIcon },
-  { to: "/citas",     label: "CITAS",     icon: CitasIcon    },
   { to: "/mascotas",  label: "MASCOTAS",  icon: MascotasIcon },
+  { to: "/citas",     label: "CITAS",     icon: CitasIcon    },
   { to: "/clinicas",  label: "CLINICAS",  icon: ClinicasIcon },
 ];
 

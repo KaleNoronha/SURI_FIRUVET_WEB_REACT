@@ -171,40 +171,37 @@ function InicioPage() {
         ))}
       </div>
 
-      {/* Bottom section: acceso rápido + historial side by side on large screens */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-
-        <section className="xl:col-span-2 space-y-4">
-          <p className="text-[22px] font-bold uppercase tracking-[0.20em] text-[#2db5a3]">Acceso rápido</p>
+      {/* Acceso rápido — una sola fila */}
+      <section className="space-y-4">
+        <p className="text-[22px] font-bold uppercase tracking-[0.20em] text-[#2db5a3]">Acceso rápido</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <QuickAccessCard label="Dashboard" icon={<img src={DashboardIcon} alt="Dashboard" className="h-14 w-14" />} onClick={() => navigate("/inicio")} delay={0} />
-            <QuickAccessCard label="Registrar Mascotas" icon={<img src={MascotasIcon} alt="Mascotas" className="h-14 w-14" />} onClick={() => navigate("/mascotas")} delay={80} />
-            <QuickAccessCard label="Registrar Citas" icon={<img src={CitasIcon} alt="Citas" className="h-14 w-14" />} onClick={() => navigate("/citas")} delay={160} />
-            <QuickAccessCard label="Ubicación" icon={<img src={ClinicasIcon} alt="Ubicación" className="h-14 w-14" />} onClick={() => navigate("/clinicas")} delay={240} />
+          <QuickAccessCard label="Dashboard" icon={<img src={DashboardIcon} alt="Dashboard" className="h-14 w-14" />} onClick={() => navigate("/inicio")} delay={0} />
+          <QuickAccessCard label="Registrar Mascotas" icon={<img src={MascotasIcon} alt="Mascotas" className="h-14 w-14" />} onClick={() => navigate("/mascotas")} delay={80} />
+          <QuickAccessCard label="Registrar Citas" icon={<img src={CitasIcon} alt="Citas" className="h-14 w-14" />} onClick={() => navigate("/citas")} delay={160} />
+          <QuickAccessCard label="Ubicación" icon={<img src={ClinicasIcon} alt="Ubicación" className="h-14 w-14" />} onClick={() => navigate("/clinicas")} delay={240} />
+        </div>
+      </section>
+
+      {/* Historial — debajo */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-4 bg-slate-50 px-6 py-4">
+          <CardTitle className="text-[#2db5a3]">Historial de atención</CardTitle>
+          <Button variant="link" className="text-[#2db5a3] p-0 h-auto text-sm ml-auto" onClick={() => navigate("/citas")}>
+            Ver todas
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {historial.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-4">Sin citas registradas aún.</p>
+            ) : (
+              historial.map((item, i) => (
+                <HistorialItem key={item.titulo + item.fecha} titulo={item.titulo} hora={item.hora} fecha={item.fecha} delay={i * 80} />
+              ))
+            )}
           </div>
-        </section>
-
-        <Card className="xl:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between gap-4 bg-slate-50 px-6 py-4">
-            <CardTitle className="text-[#2db5a3]">Historial de atención</CardTitle>
-            <Button variant="link" className="text-[#2db5a3] p-0 h-auto text-sm ml-auto" onClick={() => navigate("/citas")}>
-              Ver todas
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {historial.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-4">Sin citas registradas aún.</p>
-              ) : (
-                historial.map((item, i) => (
-                  <HistorialItem key={item.titulo + item.fecha} titulo={item.titulo} hora={item.hora} fecha={item.fecha} delay={i * 80} />
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

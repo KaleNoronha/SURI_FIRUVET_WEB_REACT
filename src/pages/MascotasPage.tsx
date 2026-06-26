@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
-import { Eye, Heart } from "lucide-react";
+import { Eye, Heart, Trash2 } from "lucide-react";
 import { Button, Modal } from "@components/ui";
-import { LoadingOverlay, EmptyState, ErrorMessage, PageSkeleton } from "@components/common";
+import { LoadingOverlay, EmptyState, ErrorMessage, PageSkeleton, ConfirmDialog } from "@components/common";
 import RegistrarMascotaForm from "@components/mascotas/RegistrarMascotaForm";
 import MascotaDetalles from "@components/mascotas/MascotaDetalles";
 import EditarMascotaForm from "@components/mascotas/EditarMascotaForm";
@@ -33,7 +33,8 @@ function MascotasPage() {
   const [modalDetallesOpen, setModalDetallesOpen] = useState(false);
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState<Mascota | null>(null);
-  const [mascotaParaEditar, setMascotaParaEditar] = useState<Mascota | null>(null);
+  const [mascotaParaEditar, setMascotaParaEditar]     = useState<Mascota | null>(null);
+  const [mascotaParaEliminar, setMascotaParaEliminar] = useState<Mascota | null>(null);
 
   const cargarMascotas = useCallback(async () => {
     if (!idCliente) return;
@@ -215,14 +216,19 @@ function MascotasPage() {
                   className="flex-1 bg-[#f0644f] hover:bg-[#e55a47] text-white py-2 text-sm font-bold rounded-lg transition-colors"
                 >
                   <Eye className="size-4 mr-1" />
-                  Ver Detalles
+                  Ver
                 </Button>
-
                 <Button
                   onClick={() => handleEditarMascota(mascota)}
                   className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 text-sm font-bold rounded-lg transition-colors"
                 >
                   Editar
+                </Button>
+                <Button
+                  onClick={() => setMascotaParaEliminar(mascota)}
+                  className="bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-600 p-2 rounded-lg transition-colors"
+                >
+                  <Trash2 className="size-4" />
                 </Button>
               </div>
             </div>
@@ -277,6 +283,21 @@ function MascotasPage() {
           loading={loading}
         />
       </Modal>
+
+      {/* Confirmar eliminación */}
+      <ConfirmDialog
+        open={!!mascotaParaEliminar}
+        variant="danger"
+        title="Eliminar mascota"
+        description={`¿Eliminar a ${mascotaParaEliminar?.nombMas}? Si tiene citas asociadas no podrá eliminarse.`}
+        confirmLabel="Eliminar"
+        onConfirm={async () => {
+          if (!mascotaParaEliminar) return;
+          await handleEliminarMascota(mascotaParaEliminar);
+          setMascotaParaEliminar(null);
+        }}
+        onCancel={() => setMascotaParaEliminar(null)}
+      />
     </div>
   );
 }
