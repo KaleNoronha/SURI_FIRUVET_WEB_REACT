@@ -16,14 +16,11 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install pnpm
-        run: npm install -g pnpm@latest
-
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: npm install
 
       - name: Build
-        run: pnpm build
+        run: npm run build
         env:
           VITE_URL_BASE: ${{ secrets.VITE_URL_BASE }}
           VITE_URL_BASE_SOAP: ${{ secrets.VITE_URL_BASE_SOAP }}

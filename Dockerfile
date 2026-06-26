@@ -3,15 +3,13 @@ FROM node:24-alpine AS builder
 
 ENV CI=true
 
-RUN npm install -g pnpm
-
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json package-lock.json* ./
+RUN npm ci --prefer-offline 2>/dev/null || npm install
 
 COPY . .
-RUN pnpm build
+RUN npm run build
 
 # ── Stage 2: serve ───────────────────────────────────────────
 FROM nginx:alpine
