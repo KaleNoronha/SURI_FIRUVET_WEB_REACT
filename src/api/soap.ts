@@ -1,7 +1,7 @@
 import { env } from "@config/env.config";
 
-// ponytail: empty in dev → Vite proxy handles routing; full URL in production
-const BASE_URL = env.isDev ? "" : env.soap.baseUrl;
+// ponytail: empty when proxy is active (dev:local); full URL in prod or dev:dev
+const BASE_URL = env.isProxy ? "" : env.soap.baseUrl;
 const SOAP_ENV_NS = "http://schemas.xmlsoap.org/soap/envelope/";
 const SOAP_NS = env.soap.namespace;
 

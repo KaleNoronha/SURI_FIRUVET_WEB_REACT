@@ -4,12 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss()
   ],
-  server: {
+  server: mode !== 'direct' ? {
     proxy: {
       '/api': {
         target: 'https://suri-firuvet-ios-damii-api.onrender.com',
@@ -22,7 +22,7 @@ export default defineConfig({
         secure: true,
       },
     },
-  },
+  } : {},
   resolve: {
     alias: {
       '@components': path.resolve(__dirname, 'src/components'),

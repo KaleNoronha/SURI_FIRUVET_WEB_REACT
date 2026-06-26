@@ -2,8 +2,8 @@ import type { RequestOptions, ApiErrorResponse, HttpClient } from "@appTypes/htt
 
 import { env } from "@config/env.config";
 
-// ponytail: empty in dev → Vite proxy handles routing; full URL in production
-const BASE_URL = env.isDev ? "" : env.api.baseUrl;
+// ponytail: empty when proxy is active (dev:local); full URL in prod or dev:dev
+const BASE_URL = env.isProxy ? "" : env.api.baseUrl;
 
 /**
  * Cliente HTTP genérico basado en fetch nativo.
