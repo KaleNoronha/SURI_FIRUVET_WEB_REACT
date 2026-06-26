@@ -1,18 +1,21 @@
 # ── Stage 1: build ──────────────────────────────────────────
 FROM node:24-alpine AS builder
 
+ENV CI=true
+
 RUN npm install -g pnpm
 
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && \
-    pnpm install --frozen-lockfile --ignore-scripts
 
+# Instalar dependencias
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
+# Copiar código y buildear
 COPY . .
 RUN pnpm build
 
 # ── Stage 2: serve ───────────────────────────────────────────
-# nginx:alpine sirve los archivos estáticos y maneja el SPA fallback
 FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
