@@ -7,11 +7,12 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Instalar dependencias
-COPY package.json pnpm-lock.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile --ignore-scripts
+COPY package.json pnpm-lock.yaml ./
 
-# Copiar código y buildear
+# Permitir build scripts (firebase, protobufjs los necesitan)
+RUN echo "ignore-scripts=false" > .npmrc && \
+    pnpm install --frozen-lockfile
+
 COPY . .
 RUN pnpm build
 
